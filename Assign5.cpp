@@ -104,8 +104,8 @@ int main()
 
 	//double dt = .1;  // Relaxation timestep
 
-	long   xPanel = 40;  // X panel count
-	long   yPanel = 40;  // Y panel count
+	long   xPanel = 200;  // X panel count
+	long   yPanel = 200;  // Y panel count
 	long maxPanel = max(xPanel, yPanel);
 	
 	double tol = 1.0e-6;  // Stopping tolerance
