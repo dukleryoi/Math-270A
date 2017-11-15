@@ -9,6 +9,9 @@ using namespace std; // Using the "standard" (std) standard template library com
 #ifndef _GridFun2D_
 #define _GridFun2D_
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 class GridFun2D
 {
@@ -26,7 +29,7 @@ public:
 
 	GridFun2D(long xPanel, double xMin, double xMax, long yPanel, double yMin, double yMax)
 	{
-		initialize(xPanel, xMin,  xMax,  yPanel,  yMin,  yMax);
+		initialize(xPanel, xMin, xMax, yPanel, yMin, yMax);
 	};
 
 	void initialize()
@@ -65,7 +68,7 @@ public:
 		this->yMax = yMax;
 		this->hy = (yMax - yMin) / (yPanel);
 		this->hx = (xMax - xMin) / (xPanel);
-		values.initialize(xPanel+1, yPanel+1);
+		values.initialize(xPanel + 1, yPanel + 1);
 
 	};
 
@@ -73,7 +76,7 @@ public:
 	{
 		initialize(G);
 	};
-
+#ifndef _OPENMP
 	void operator+=(const GridFun2D& G)
 	{
 		double* dValues = values.getDataPointer();
@@ -83,6 +86,22 @@ public:
 			dValues[i] += gValues[i];
 		}
 	};
+#else
+
+	void operator+=(const GridFun2D& G)
+	{
+		double* dValues = values.getDataPointer();
+		double* gValues = G.values.getDataPointer();
+		long i;
+#pragma omp parallel for default(shared) private(i) schedule(static)
+		for (i = 0; i < values.getDataSize(); i++)
+		{
+			dValues[i] += gValues[i];
+		}
+	};
+
+#endif
+
 
 	void operator-=(const GridFun2D& G)
 	{
@@ -141,7 +160,7 @@ public:
 	{
 		//fix
 		double* dValues = V.values.getDataPointer();
-		for (long i = 0; i < V.values.getDataSize(); i+= 10)
+		for (long i = 0; i < V.values.getDataSize(); i += 10)
 		{
 			outStream << setw(5) << dValues[i] << " ";
 			outStream << endl;
